@@ -19,20 +19,28 @@ object row_number_test extends SuperJob {
   override def run(): Unit = {
     val df: DataFrame = spark.read.json("C:\\Users\\rr398\\IdeaProjects\\local_test\\src\\MileageAndSpeed.json")
     df.show()
+    //排序开窗函数
+    //    val spec: WindowSpec = Window.partitionBy("ESN").orderBy(asc_nulls_last("report_date"))
+    //
+    //    val grouped: Dataset[Row] = df.select("ESN", "report_date", "percent_torque")
+    //      .groupBy("ESN", "report_date").agg(
+    //      collect_list($"percent_torque") as "percent_torque"
+    //    )
+    //
+    //    grouped.show()
+    //
+    //    val result: DataFrame = grouped.withColumn("rank", row_number().over(spec))
+    //      .where($"rank" === 1)
+    //      .drop("rank")
+    //    result.show(100, false)
+    //    result.printSchema()
 
-    val spec: WindowSpec = Window.partitionBy("ESN").orderBy(asc_nulls_last("report_date"))
+    //聚合开窗函数
+    val result = df
+      .withColumn("count_percent_torque",
+        count("percent_torque").over(Window.partitionBy("DATA_TYPE", "ESN", "Report_Date")) as "count_percent_torque")
+    result.show()
 
-    val grouped: Dataset[Row] = df.select("ESN", "report_date", "percent_torque")
-      .groupBy("ESN", "report_date").agg(
-      collect_list($"percent_torque") as "percent_torque"
-    )
 
-    grouped.show()
-
-    val result: DataFrame = grouped.withColumn("rank", row_number().over(spec))
-      .where($"rank" === 1)
-      .drop("rank")
-    result.show(100, false)
-    result.printSchema()
   }
 }
